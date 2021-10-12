@@ -19,8 +19,8 @@
 
 ## Resources
   * 🗎 [Project Plan](https://docs.google.com/document/d/1Usbg4svs-ktXkySsy2iZw_m6-oGI9zH6Pl2AX3vaeGY/edit)
-  * 🎨[Prototype](https://www.figma.com/files/team/1029739667584098877/ASE-Project?fuid=834365827486728658)
-  * 🥨[Snack] - unavilable for now
+  *🎨 [Prototype](https://www.figma.com/files/team/1029739667584098877/ASE-Project?fuid=834365827486728658)
+  *🥨 [Snack] - unavilable for now
 
 ## 🚧 TODO:
   ✅ ~ Complete \
