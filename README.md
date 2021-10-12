@@ -21,6 +21,12 @@
   * 🗎 [Project Plan](https://docs.google.com/document/d/1Usbg4svs-ktXkySsy2iZw_m6-oGI9zH6Pl2AX3vaeGY/edit)
   * 🎨 [Prototype](https://www.figma.com/files/team/1029739667584098877/ASE-Project?fuid=834365827486728658)
   * 🥨 [Snack] - unavilable for now
+  * React Native & React tutorials
+    * [Fireship React + Firebase Course](https://fireship.io/courses/react-next-firebase/)
+    * [Fireship React Native Chat Demo](https://fireship.io/courses/react-next-firebase/)
+    * [Programming with mosh - React Native Full tutorial](https://www.youtube.com/watch?v=0-S5a0eXPoc&list=PLTjRvDozrdlw5En5v2xrBr_EqieHf7hGs&index=3)
+    * [Programming with mosh - Reactjs](https://www.youtube.com/watch?v=Ke90Tje7VS0&list=PLTjRvDozrdlw5En5v2xrBr_EqieHf7hGs&index=2)
+    * [Programming with mosh - Javascript](https://www.youtube.com/watch?v=W6NZfCO5SIk&list=PLTjRvDozrdlw5En5v2xrBr_EqieHf7hGs&index=5)
 
 ## 🚧 TODO:
   ✅ ~ Complete \
