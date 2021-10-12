@@ -18,4 +18,4 @@
   ✅ ~ Complete \
   ⚙️ ~ Incomplete
   ---
-  ⚙️ - Project Description (Lorem Ipsum 4 now)
+  * ⚙️ - Project Description (Lorem Ipsum 4 now)
