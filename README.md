@@ -8,7 +8,6 @@
 > C makes it easy to shoot yourself in the foot; C++ makes it harder, but when you do, it blows away your whole leg.
 
 🔨 The Main Task :  Displaying GPS coordinates and Displaying position on Google Maps or OpenStreetmap [more](http://users.sussex.ac.uk/~hh435/ase/task2.html)
-
  
 ## 🏋️‍♂️ Getting Started
    ### 🧑‍💻 Installation
@@ -18,8 +17,14 @@
   * ▶️ visit [React Native Tutorial(s)](https://reactnative.dev/docs/tutorial) for React Native tutorial(s)
   * ▶️ visit [React Native Docs](https://reactnative.dev/docs) for React Native documentation
 
+## Resources
+  * 🗎 [Project Plan](https://docs.google.com/document/d/1Usbg4svs-ktXkySsy2iZw_m6-oGI9zH6Pl2AX3vaeGY/edit)
+  * 🎨[Prototype](https://www.figma.com/files/team/1029739667584098877/ASE-Project?fuid=834365827486728658)
+  * 🥨[Snack] - unavilable for now
+
 ## 🚧 TODO:
   ✅ ~ Complete \
   ⚙️ ~ Incomplete
   ---
-  * ⚙️ - Project Description (Lorem Ipsum 4 now)
+  * ✅ - Project Description
+  * ⚙️ - Workload assignment
