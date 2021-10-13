@@ -2,9 +2,16 @@ import React from "react";
 import { Text, StyleSheet, ScrollView, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import useLocation from "./hooks/useLocation";
+import { LogBox } from "react-native";
+
+// error ignored because of MapView bug
+LogBox.ignoreLogs([
+  "Warning: Failed prop type: The prop `region.latitude` is marked as required in `MapView`, but its value is `undefined`.",
+]);
 
 export default function App() {
   const [location, errorMsg] = useLocation();
+  const [regionLocation, setRegionLocation] = React.useState(null);
 
   let text = "Waiting..";
   let coords = {};
@@ -22,10 +29,17 @@ export default function App() {
 
   const { latitude, longitude } = coords;
 
+  const onRegionChange = (region) => {
+    setRegionLocation({ region });
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView>
         <Text style={styles.paragraph}>{text}</Text>
+        <Text style={styles.paragraph}>
+          {JSON.stringify(regionLocation, null, 2)}
+        </Text>
       </ScrollView>
       {location ? (
         <MapView
@@ -35,7 +49,12 @@ export default function App() {
             latitudeDelta: 0.0922,
             longitudeDelta: 0.0421,
           }}
+          showsUserLocation={true}
+          followUserLocation={true}
+          zoomEnabled={true}
           style={styles.map}
+          region={regionLocation}
+          onRegionChange={onRegionChange}
         >
           <Marker coordinate={{ latitude, longitude }} />
         </MapView>
