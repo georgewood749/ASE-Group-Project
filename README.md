@@ -1,7 +1,7 @@
 # ASE-Group-Project
 ## Project Description
   ### Motivation 🔥
-> If something is worth doing once, it's worth npmbuilding a tool to do it. 
+> If something is worth doing once, it's worth building a tool to do it. 
 > Measuring programming progress by lines of code is like measuring aircraft building progress by weight. 
 > It's not a bug - it's an undocumented feature. 
 > When debugging, novices insert corrective code; experts remove defective code. 
