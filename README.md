@@ -13,6 +13,7 @@
    ### 🧑‍💻 Installation
   * ▶️ [Clone](https://github.com/georgewood749/ASE-Group-Project.git) repo files
   * ▶️ run ``npm install`` or ``npm i`` on the terminal to install dependencies
+    ** You need to install [nodejs](https://nodejs.org/en/) on your pc or mac to use npm
   * ▶️ visit [Expo Docs](https://docs.expo.dev/) for Expo documentation
   * ▶️ visit [React Native Tutorial(s)](https://reactnative.dev/docs/tutorial) for React Native tutorial(s)
   * ▶️ visit [React Native Docs](https://reactnative.dev/docs) for React Native documentation
