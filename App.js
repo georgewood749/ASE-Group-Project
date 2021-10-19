@@ -3,6 +3,7 @@ import { Text, StyleSheet, ScrollView, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import useLocation from "./hooks/useLocation";
 import { LogBox } from "react-native";
+import LoadingIndicator from "./components/loading";
 
 // error ignored because of MapView bug
 LogBox.ignoreLogs([
@@ -11,17 +12,22 @@ LogBox.ignoreLogs([
 
 export default function App() {
   const [location, errorMsg] = useLocation();
-  const [regionLocation, setRegionLocation] = React.useState({waiting: "Data unavailable..."});
+  const [regionLocation, setRegionLocation] = React.useState({
+    waiting: "Data unavailable...",
+  });
 
   /*
    Checks for error message.
    if there is text is updated with error;
    else the location is updated and the map is drawn.
   */
-  let text = "Waiting..";
+
+  let text = undefined;
   let coords = {};
   if (errorMsg) {
     text = errorMsg;
+
+    // return LogBox.error(errorMsg); *
   } else if (location) {
     /*
      * JSON.stringify with 2 as the 3rd argument.
@@ -45,6 +51,10 @@ export default function App() {
   const onRegionChange = (region) => {
     setRegionLocation({ region });
   };
+
+  if (typeof text == "undefined") {
+    return <LoadingIndicator />;
+  }
 
   return (
     <View style={styles.container}>
