@@ -3,6 +3,7 @@ import { Text, StyleSheet, ScrollView, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import useLocation from "./hooks/useLocation";
 import { LogBox } from "react-native";
+import LoadingIndicator from "./components/loading";
 
 // error ignored because of MapView bug
 LogBox.ignoreLogs([
@@ -11,27 +12,49 @@ LogBox.ignoreLogs([
 
 export default function App() {
   const [location, errorMsg] = useLocation();
-  const [regionLocation, setRegionLocation] = React.useState(null);
+  const [regionLocation, setRegionLocation] = React.useState({
+    waiting: "Data unavailable...",
+  });
 
-  let text = "Waiting..";
+  /*
+   Checks for error message.
+   if there is text is updated with error;
+   else the location is updated and the map is drawn.
+  */
+
+  let text = undefined;
   let coords = {};
   if (errorMsg) {
-    // if error then text displayed will contain error.
     text = errorMsg;
+
+    // return LogBox.error(errorMsg); *
   } else if (location) {
     /*
      * JSON.stringify with 2 as the 3rd argument.
-     * This will make the returned JSON string have 2 spaces for indentation at each level.
+     * This will make the returned JSON string have 2 spaces for -
+     * -  indentation at each level.
      */
     text = JSON.stringify(location, null, 2);
-    coords = location.coords;
-  }
+    const { longitude, latitude } = location.coords;
+    coords.longitude = longitude;
+    coords.latitude = latitude;
 
-  const { latitude, longitude } = coords;
+    /*
+    Default value for now. 
+    Might need to zoom out to see location on some devices
+    */
+
+    coords.latitudeDelta = 0.0922;
+    coords.longitudeDelta = 0.0421;
+  }
 
   const onRegionChange = (region) => {
     setRegionLocation({ region });
   };
+
+  if (typeof text == "undefined") {
+    return <LoadingIndicator />;
+  }
 
   return (
     <View style={styles.container}>
@@ -43,23 +66,22 @@ export default function App() {
       </ScrollView>
       {location ? (
         <MapView
-          initialRegion={{
-            latitude,
-            longitude,
-            latitudeDelta: 0.0922,
-            longitudeDelta: 0.0421,
-          }}
+          initialRegion={coords}
           showsUserLocation={true}
           followUserLocation={true}
           zoomEnabled={true}
           style={styles.map}
-          region={regionLocation}
-          onRegionChange={onRegionChange}
+          onRegionChangeComplete={onRegionChange}
         >
-          <Marker coordinate={{ latitude, longitude }} />
+          <Marker
+            coordinate={{
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+            }}
+          />
         </MapView>
       ) : (
-        <View />
+        <Text style={styles.paragraph}>Waiting for map...</Text>
       )}
     </View>
   );
