@@ -2,8 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet, StatusBar } from "react-native";
 import Button from "../components/Button";
 
-
 export default ({navigation}) => {
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>ASE Group Project Task 3</Text>

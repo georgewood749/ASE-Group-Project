@@ -1,41 +1,51 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, StatusBar, TextInput } from "react-native";
-import { AuthContext } from "../config/context";
-import { register } from "../config/api/index";
-import { setToken } from "../config/credentials";
+import { setAuth } from "../config/credentials";
 import Button from "../components/Button";
+import axios from "axios";
 
-export default () => {
+export default ({ navigation }) => {
   // for updating and re-rendering register page when -
   // (a) username is changed
   // (b) password is changed
   const [username, setUsername] = useState(undefined);
   const [password, setPassword] = useState(undefined);
 
-  // updates parent navigation component to re-render children.
-  const setAuth = useContext(AuthContext);
+  const API = axios.create({
+    baseURL: "http://46.101.40.220:8080/",
+  });
 
-  const handleRegister = (username, password) => {
-    register(username, password)
-      .then((res) => {
-        const { accessToken, username, refreshToken, expirationDate } = res;
-        setToken({
-          username,
-          token: accessToken,
-          refreshToken,
-          expirationDate,
-        }).then((value) => {
-          const { token, username, refreshToken, expirationDate } = value;
-          setAuth({
-            isAuthenticated: true,
-            accessToken: token,
-            username,
-            refreshToken,
-            expirationDate,
-          });
-        });
-      })
-      .catch((error) => console.log(error.message));
+  const handleRegister = async (username, password) => {
+    if (username && password) {
+      await API.post("/account/signup", { username, password })
+        .then(async (res) => {
+          const {
+            user: { id, username },
+          } = res.data;
+
+          await API.post("/authorization/login", { username, password }).then(
+            async (res) => {
+              const {
+                user: { id, username },
+                accessToken,
+                refreshToken: { token, expirationDate },
+              } = res.data;
+
+              const value = await setAuth({
+                id,
+                username,
+                token:accessToken,
+                refreshToken: token,
+                expirationDate,
+              });
+
+              if (value) navigation.navigate("Home");
+              else return new Error("Failed to store login details");
+            }
+          );
+        })
+        .catch((error) => console.log(error.message, "Account does not exist"));
+    }
   };
 
   return (

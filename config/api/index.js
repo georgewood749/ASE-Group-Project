@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASE_URL = "http://46.101.40.220:8080/";
+const BASE_URL = "https://dot-outstanding-theory.glitch.me/";
 
 const API = axios.create({
   baseUrl: BASE_URL,
@@ -7,15 +7,13 @@ const API = axios.create({
 
 const HEADERS = {
   AUTH_HEADER: (token) => ({
-    Authorization: `Bearer ${token}`,
+    "x-access-token": `${token}`,
     Accept: "application/json;",
     "Content-Type": "application/json",
-    XNationality: "en",
   }),
   LOGIN_HEADER: {
-    "accept": "application/json;",
+    accept: "application/json;",
     "Content-Type": "application/json",
-    "XNationality": "en",
   },
 };
 
@@ -32,12 +30,12 @@ const LoginResults = ({
   username,
 });
 
-export const updateToken = async ({ token, refreshToken }) =>
+export const updateToken = async ({ refreshToken }) =>
   await API.post(
-    "authorization/refresh",
-    { refreshToken },
+    "api/auth/refreshtoken",
+    {},
     {
-      headers: HEADERS.AUTH_HEADER(token),
+      headers: HEADERS.AUTH_HEADER(refreshToken),
     }
   );
 
@@ -45,13 +43,8 @@ export const login = async (username, password) => {
   if (username && password) {
     // no verification needed passowrd -
     // - and username can be anything.
-    return await API.post(
-      "authorization/login",
-      `{\"username\":\"${username}\",\"password\":\"${password}\"}`,
-      {
-        headers: HEADERS.LOGIN_HEADER,
-      }
-    ).then((res) => LoginResults(res));
+      const res =  await API.post("api/auth/signin", {username, password});
+      return res;
   }
 };
 
@@ -60,7 +53,7 @@ export const register = async (username, password) => {
     // no verification needed passowrd -
     // - and username can be anything.
     return await API.post(
-      "account/signup",
+      "api/auth/signup",
       { username, password },
       {
         headers: HEADERS.LOGIN_HEADER,

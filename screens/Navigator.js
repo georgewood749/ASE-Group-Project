@@ -1,11 +1,12 @@
-import React, {useEffect, useState} from "react";
-import { AuthContext } from "../config/context";
+import React, { useEffect, useState } from "react";
 import Home from "./Home";
 import Launch from "./Launch";
 import Login from "./Login";
 import Register from "./Register";
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { getAuthentication, clearCredentials } from "../config/credentials";
+import {AuthContext} from "../config/context";
 
 const Stack = createStackNavigator();
 
@@ -33,21 +34,27 @@ const SignedOut = () => (
   </NavigationContainer>
 );
 
-
-
 export default () => {
-   // const [state, setState] = useAuthentication();
-   const [state, setState] = useState({
-       isAuthenticated: false,
-   });
+  const [state, setState] = useState(false);
 
-    if(state.isAuthenticated) {
-        return <AuthContext.Provider value={state.user}>
-            <SignedIn />
-        </AuthContext.Provider>
-    } else {
-        return <AuthContext.Provider value={setState}>
-            <SignedOut />
-        </AuthContext.Provider>
-    }
-}
+  useEffect(() => {
+    (async () => {
+      await getAuthentication().then((res) => {
+        setState(res);
+      });
+
+      return () => {
+        return ( async() => await clearCredentials())();
+      }
+    })();
+
+  });
+
+  if (state) {
+    // setState passed to remount navigator on logout
+    return <SignedIn />
+    
+  } else {
+    return <SignedOut />
+  }
+};

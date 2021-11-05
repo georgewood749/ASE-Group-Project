@@ -1,41 +1,52 @@
 import React, { useState, useContext } from "react";
 import { View, Text, StyleSheet, StatusBar, TextInput } from "react-native";
-import { AuthContext } from "../config/context";
-import { login } from "../config/api/index";
-import { setToken } from "../config/credentials";
 import Button from "../components/Button";
+import axios from "axios";
+import { setAuth } from "../config/credentials";
 
-export default () => {
+const API = axios.create({
+  baseURL: "http://46.101.40.220:8080/",
+});
+
+export default ({ navigation }) => {
   // for updating and re-rendering login page when -
   // (a) username is changed
   // (b) password is changed
   const [username, setUsername] = useState(undefined);
   const [password, setPassword] = useState(undefined);
 
-  // updates parent navigation component to re-render children.
-  const setAuth = useContext(AuthContext);
+  const handleLogin = async (username, password) => {
+    if (username && password) {
+      await API.post(
+        "/authorization/login",
+        { username, password },
+        {
+          headers: {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            XNationality: "en",
+          },
+        }
+      )
+        .then(async (res) => {
+          const {
+            user: { id, username },
+            accessToken,
+            refreshToken: { token, expirationDate },
+          } = res.data;
 
-  const handleLogin = (username, password) => {
-    login(username, password)
-      .then((res) => {
-        const { accessToken, username, refreshToken, expirationDate } = res;
-        setToken({
-          username,
-          token: accessToken,
-          refreshToken,
-          expirationDate,
-        }).then((value) => {
-          const { token, username, refreshToken, expirationDate } = value;
-          setAuth({
-            isAuthenticated: true,
-            accessToken: token,
+          const value = await setAuth({
+            id,
             username,
-            refreshToken,
+            token: accessToken,
+            refreshToken: token,
             expirationDate,
           });
-        });
-      })
-      .catch((error) => console.log(error.message));
+          if (value) navigation.navigate("Home");
+          else return new Error("Failed to store login details");
+        })
+        .catch((error) => console.log(error.message));
+    }
   };
 
   return (
