@@ -63,7 +63,7 @@ export const getAuthentication = async () => {
 
 export const clearCredentials = async () => {
   try {
-    const res = SecureStore.deleteItemAsync("credentials");
+    const res = await SecureStore.deleteItemAsync("credentials");
     if (res) return true;
     else return false;
   } catch (err) {

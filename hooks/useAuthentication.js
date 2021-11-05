@@ -1,28 +1,24 @@
-import {useState, useEffect} from "react";
-import {isAuthenticated, getToken} from "../config/credentials";
-
+import { useState, useEffect, useMemo } from "react";
+import { getAuthentication } from "../config/credentials";
 
 export default () => {
-    const [state, setState] = useState({
-        
-    });
+  const [state, setState] = useState(false);
 
-    useEffect(() => {
-        if(!isAuthenticated()) {
-            console.log(isAuthenticated());
-            setState({
-                isAuthenticated: isAuthenticated(),
-            });
-        } else {
-            getToken().then((data) => {
-                setState(data);
-            })
-        }
+  const authState = useMemo(() => ({
+    sign: () => {
+      setState(true);
+    },
+    signOut: () => {
+      setState(false);
+    }
+  }))
 
-        return () => {};
-    });
+  useEffect(() => {
+    (async () => {
+      const isAuthenticated = await getAuthentication();
+      setState(isAuthenticated);
+    })();
+  });
 
-
-    return [state, setState]
-
-}
+  return [state, authState];
+};

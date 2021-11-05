@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, StatusBar, TextInput } from "react-native";
 import Button from "../components/Button";
 import axios from "axios";
 import { setAuth } from "../config/credentials";
+import { AuthContext } from "../config/context";
 
 const API = axios.create({
   baseURL: "http://46.101.40.220:8080/",
@@ -14,6 +15,8 @@ export default ({ navigation }) => {
   // (b) password is changed
   const [username, setUsername] = useState(undefined);
   const [password, setPassword] = useState(undefined);
+
+  const authState = useContext(AuthContext);
 
   const handleLogin = async (username, password) => {
     if (username && password) {
@@ -42,7 +45,9 @@ export default ({ navigation }) => {
             refreshToken: token,
             expirationDate,
           });
-          if (value) navigation.navigate("Home");
+          if (value) {
+            authState.sign()
+          }
           else return new Error("Failed to store login details");
         })
         .catch((error) => console.log(error.message));

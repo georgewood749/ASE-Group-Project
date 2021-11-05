@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Text, StyleSheet, ScrollView, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import useLocation from "../hooks/useLocation";
 import LoadingIndicator from "../components/loading";
-import { getCredentials } from "../config/credentials";
+import { getCredentials, clearCredentials } from "../config/credentials";
 import Button from "../components/Button";
+import { AuthContext } from "../config/context";
 
 import axios from "axios";
 
@@ -13,13 +14,17 @@ const API = axios.create({
 });
 
 const header = (token) => ({
-  Authorization: `Bearer ${token}`,
+  Authorization: `${token}`,
   Accept: "application/json;",
   "Content-Type": "application/json",
   XNationality: "en",
 });
 
 const StlyedMarker = ({ user }) => {
+  if (user == null) {
+    return <LoadingIndicator />;
+  }
+
   return (
     <View
       style={{
@@ -32,17 +37,19 @@ const StlyedMarker = ({ user }) => {
         alignItems: "center",
       }}
     >
-      <Text style={{ color: "black" }}>{user.username}</Text>
+      <Text style={{ color: "black" }}>{user.username || "Anonymous"}</Text>
     </View>
   );
 };
 
-export default () => {
+export default ({ navigation }) => {
   const [location, errorMsg] = useLocation();
   const [regionLocation, setRegionLocation] = React.useState({
     waiting: "Data unavailable...",
   });
   const [user, setUser] = React.useState(undefined);
+
+  const authState = useContext(AuthContext);
 
   React.useEffect(() => {
     (async () => {
@@ -123,8 +130,10 @@ export default () => {
         </Button>
 
         <Button
-          submit={() => {
-            
+          submit={async () => {
+              await clearCredentials()
+              .then(authState.signOut)
+              .catch(err => {console.error(err)});
           }}
         >
           Sign out

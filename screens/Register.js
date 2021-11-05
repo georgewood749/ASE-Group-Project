@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, StyleSheet, StatusBar, TextInput } from "react-native";
 import { setAuth } from "../config/credentials";
 import Button from "../components/Button";
 import axios from "axios";
+import {AuthContext} from "../config/context";
+
 
 export default ({ navigation }) => {
   // for updating and re-rendering register page when -
@@ -10,6 +12,8 @@ export default ({ navigation }) => {
   // (b) password is changed
   const [username, setUsername] = useState(undefined);
   const [password, setPassword] = useState(undefined);
+
+  const authState = useContext(AuthContext);
 
   const API = axios.create({
     baseURL: "http://46.101.40.220:8080/",
@@ -20,7 +24,7 @@ export default ({ navigation }) => {
       await API.post("/account/signup", { username, password })
         .then(async (res) => {
           const {
-            user: { id, username },
+            user: { username },
           } = res.data;
 
           await API.post("/authorization/login", { username, password }).then(
@@ -39,7 +43,7 @@ export default ({ navigation }) => {
                 expirationDate,
               });
 
-              if (value) navigation.navigate("Home");
+              if (value) authState.sign();
               else return new Error("Failed to store login details");
             }
           );
