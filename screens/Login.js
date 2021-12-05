@@ -1,126 +1,179 @@
-import React, { useState, useContext } from "react";
-import { View, Text, StyleSheet, StatusBar, TextInput } from "react-native";
-import Button from "../components/Button";
-import axios from "axios";
-import { setAuth } from "../config/credentials";
-import { AuthContext } from "../config/context";
+import React, { useEffect } from "react";
+import { useImmer } from "use-immer";
+import { StyleSheet } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { LOGIN_REQUESTED } from "../store/auth.saga";
+import { RESET_ERROR } from "../store/auth";
 
-const API = axios.create({
-  baseURL: "http://46.101.40.220:8080/",
-});
+import {
+  Center,
+  Heading,
+  FormControl,
+  WarningIcon,
+  Stack,
+  Input,
+  Button,
+  ScrollView,
+  useToast,
+} from "native-base";
 
-export default ({ navigation }) => {
+export default () => {
   // for updating and re-rendering login page when -
   // (a) username is changed
   // (b) password is changed
-  const [username, setUsername] = useState(undefined);
-  const [password, setPassword] = useState(undefined);
+  const [username, setUsername] = useImmer(undefined);
+  const [password, setPassword] = useImmer(undefined);
 
-  const authState = useContext(AuthContext);
+  const dispatch = useDispatch();
+  const toast = useToast();
+  const message = useSelector((state) => state.auth.message);
 
-  const handleLogin = async (username, password) => {
-    if (username && password) {
-      await API.post(
-        "/authorization/login",
-        { username, password },
-        {
-          headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
-            XNationality: "en",
-          },
-        }
-      )
-        .then(async (res) => {
-          const {
-            user: { id, username },
-            accessToken,
-            refreshToken: { token, expirationDate },
-          } = res.data;
+  useEffect(() => {
+    if (message) {
+      toast.show({
+        title: "Request failed!",
+        status: "error",
+        description: message,
+      });
+      // reset message.
+      dispatch(RESET_ERROR());
+    }
+  }, [message]);
 
-          const value = await setAuth({
-            id,
+  const [error, setError] = useImmer({
+    user: {
+      message: undefined,
+    },
+    password: {
+      message: undefined,
+    },
+  });
+
+  const validatePassword = (value) => {
+    try {
+      if (!value) {
+        setError((prev) => {
+          prev.password.message = "Password cannot be empty";
+        });
+        return false;
+      } else {
+        setError((prev) => {
+          prev.password.message = undefined;
+        });
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+
+    return true;
+  };
+
+  const validateUsername = (username) => {
+    try {
+      if (!username) {
+        setError((prev) => {
+          prev.user.message = "Username cannot be empty";
+        });
+        return false;
+      } else {
+        setError((prev) => {
+          prev.user.message = undefined;
+        });
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+
+    return true;
+  };
+
+  const handleLogin = (username, password) => {
+    if (validateUsername(username) && validatePassword(password)) {
+      try {
+        dispatch(
+          LOGIN_REQUESTED({
             username,
-            token: accessToken,
-            refreshToken: token,
-            expirationDate,
-          });
-          if (value) {
-            authState.sign()
-          }
-          else return new Error("Failed to store login details");
-        })
-        .catch((error) => console.log(error.message));
+            password,
+          })
+        );
+      } catch (error) {
+        // error occured with dispatch login failure access store to see details.
+        console.log(error);
+      }
+    } else if (validateUsername(username) || validatePassword(password)) {
+      return false;
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Welcome Back!</Text>
-      <Text style={[styles.text, { fontSize: 16, fontWeight: "400" }]}>
-        Please enter your login details
-      </Text>
+    <ScrollView flex={1}>
+      <Center flex={1} mt="1/3">
+        <Heading textAlign="center">Welcome Back!</Heading>
+        <Heading textAlign="center" fontSize="md" fontWeight="light" m={5}>
+          Please enter your login details
+        </Heading>
+        <FormControl isRequired isInvalid={error.user.message}>
+          <Stack mx="4" space={3}>
+            <FormControl.Label>Username</FormControl.Label>
+            <Input
+              type="text"
+              placeholder="Username"
+              size="lg"
+              style={styles.input}
+              onChangeText={(username) => setUsername(username)}
+            />
 
-      <TextInput
-        style={styles.textInput}
-        placeholder="Username"
-        placeholderTextColor="#878787"
-        onChangeText={(username) => {
-          if (username) {
-            setUsername(username);
-          } else {
-            console.log("empty");
-          }
-        }}
-      />
-      <TextInput
-        style={styles.textInput}
-        placeholder="Password"
-        placeholderTextColor="#878787"
-        secureTextEntry={true}
-        onChangeText={(password) => {
-          if (password) {
-            setPassword(password);
-          } else {
-            console.log("empty");
-          }
-        }}
-      />
-      <Button
-        submit={() => {
-          handleLogin(username, password);
-        }}
-      >
-        Sign in
-      </Button>
-    </View>
+            <FormControl.ErrorMessage leftIcon={<WarningIcon size="xs" />}>
+              {error.user.message}
+            </FormControl.ErrorMessage>
+          </Stack>
+        </FormControl>
+        <FormControl isRequired isInvalid={error.password.message} mt={5}>
+          <Stack mx="4" space={3}>
+            <FormControl.Label>Password</FormControl.Label>
+            <Input
+              type="password"
+              placeholder="Password"
+              size="md"
+              style={styles.input}
+              onChangeText={(password) => {
+                setPassword(password);
+              }}
+            />
+            <FormControl.ErrorMessage leftIcon={<WarningIcon size="xs" />}>
+              {error.password.message}
+            </FormControl.ErrorMessage>
+          </Stack>
+        </FormControl>
+        <Button
+          bg="#EAEAEA"
+          variant="primary"
+          mt={10}
+          isLoading={message ? true : false }
+          _text={styles.text}
+          onPress={() => handleLogin(username, password)}
+        >
+          Sign in
+        </Button>
+      </Center>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    flex: 1,
-    marginTop: StatusBar.currentHeight * 2,
-  },
   text: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "rgba(0,0,0,1.00)",
-    textAlign: "center",
-    width: 246,
-    height: 114,
-    flexWrap: "wrap",
   },
-  textInput: {
-    fontWeight: "bold",
-    fontSize: 18,
-    width: 193,
-    height: 39,
-    backgroundColor: "#EAEAEA",
-    padding: 10,
-    marginTop: 5,
+  input: {
+    shadowColor: "#F2F2F2",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+
+    elevation: 1,
   },
 });

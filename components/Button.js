@@ -1,9 +1,9 @@
 import React from "react";
 import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 
-export default function Button({ children, submit }) {
+export default function Button({ children, submit, style }) {
   return (
-    <TouchableOpacity style={styles.rectangle} onPress={submit}>
+    <TouchableOpacity style={[styles.rectangle, style]} onPress={submit}>
       <Text style={styles.text}>{children}</Text>
     </TouchableOpacity>
   );

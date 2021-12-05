@@ -3,10 +3,13 @@ import Home from "./Home";
 import Launch from "./Launch";
 import Login from "./Login";
 import Register from "./Register";
+import Network from "./Network";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import useAuthentication from "../hooks/useAuthentication";
-import { AuthContext } from "../config/context";
+import { Alert, VStack, Center, Text, Box } from "native-base";
+import { useSelector } from "react-redux";
+import useNetwork from "../hooks/useNetwork";
+import LoadingIndicator from "../components/loadingWifi";
 
 const Stack = createStackNavigator();
 
@@ -34,20 +37,19 @@ const SignedOut = () => (
   </NavigationContainer>
 );
 
-export default () => {
-  const [isAuthenticated, authState] = useAuthentication();
 
-  if (isAuthenticated) {
-    return (
-      <AuthContext.Provider value={authState}>
-        <SignedIn />
-      </AuthContext.Provider>
-    );
+
+export default () => {
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const [isConnected, isLoading] = useNetwork();
+
+  if (isLoading) {
+    return <LoadingIndicator />;
+  } else if (!isConnected) {
+    return <Network />;
+  } else if (true) {
+    return <SignedIn />;
   } else {
-    return (
-      <AuthContext.Provider value={authState}>
-        <SignedOut />
-      </AuthContext.Provider>
-    );
+    return <SignedOut />;
   }
 };

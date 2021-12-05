@@ -1,124 +1,223 @@
-import React, { useState, useContext } from "react";
-import { View, Text, StyleSheet, StatusBar, TextInput } from "react-native";
-import { setAuth } from "../config/credentials";
-import Button from "../components/Button";
-import axios from "axios";
-import {AuthContext} from "../config/context";
+import React, { useEffect } from "react";
+import { useImmer } from "use-immer";
+import { StyleSheet, LogBox } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { SIGNUP_REQUESTED } from "../store/auth.saga";
+import { RESET_ERROR } from "../store/auth";
+import {
+  useToast,
+  Center,
+  Heading,
+  FormControl,
+  WarningIcon,
+  Stack,
+  Input,
+  Button,
+  ScrollView,
+} from "native-base";
+import schema from "../config/validation";
 
-
-export default ({ navigation }) => {
+export default () => {
+  LogBox.ignoreLogs([
+    'Warning: Each child in a list should have a unique "key" prop. See https://fb.me/react-warning-keys for more information.',
+  ]);
   // for updating and re-rendering register page when -
   // (a) username is changed
   // (b) password is changed
-  const [username, setUsername] = useState(undefined);
-  const [password, setPassword] = useState(undefined);
-
-  const authState = useContext(AuthContext);
-
-  const API = axios.create({
-    baseURL: "http://46.101.40.220:8080/",
+  const [username, setUsername] = useImmer(undefined);
+  const [password, setPassword] = useImmer(undefined);
+  const [error, setError] = useImmer({
+    user: {
+      message: undefined,
+    },
+    password: {
+      message: [],
+    },
   });
 
-  const handleRegister = async (username, password) => {
-    if (username && password) {
-      await API.post("/account/signup", { username, password })
-        .then(async (res) => {
-          const {
-            user: { username },
-          } = res.data;
+  const toast = useToast();
+  const message = useSelector((state) => state.auth.message);
+  const dispatch = useDispatch();
 
-          await API.post("/authorization/login", { username, password }).then(
-            async (res) => {
-              const {
-                user: { id, username },
-                accessToken,
-                refreshToken: { token, expirationDate },
-              } = res.data;
+  useEffect(() => {
+    if (message) {
+      toast.show({
+        title: "Request failed!",
+        status: "error",
+        description: message,
+      });
+      // reset message.
+      dispatch(RESET_ERROR());
+    }
+  }, [message]);
 
-              const value = await setAuth({
-                id,
-                username,
-                token:accessToken,
-                refreshToken: token,
-                expirationDate,
-              });
+  const validatePassword = (value) => {
+    try {
+      if (!value) {
+        setError((prev) => {
+          prev.password.message = [
+            {
+              id: `error_${1}`,
+              message: "Password cannot be empty",
+            },
+          ];
+        });
+        return false;
+      } else {
+        // password validation.
+        if (!schema.validate(value)) {
+          setError((prev) => {
+            const message = schema.validate(value, { details: true });
+            prev.password.message = message.map((obj, index) => {
+              return {
+                id: `error_${index}`,
+                ...obj,
+              };
+            });
+          });
 
-              if (value) authState.sign();
-              else return new Error("Failed to store login details");
-            }
-          );
+          return false;
+        } else {
+          setError((prev) => {
+            prev.password.message = [];
+          });
+        }
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+
+    return true;
+  };
+
+  const validateUsername = (username) => {
+    try {
+      if (!username) {
+        setError((prev) => {
+          prev.user.message = "Username cannot be empty";
+        });
+        return false;
+      }
+
+      if (username.length <= 5) {
+        console.log(username.length);
+        setError((prev) => {
+          prev.user.message = "Username must be at least 6 characters long";
+        });
+        return false;
+      } else {
+        setError((prev) => {
+          prev.user.message = undefined;
+        });
+      }
+    } catch (err) {
+      console.log(err.message);
+    }
+
+    return true;
+  };
+
+  const handleLogin = (username, password) => {
+    if (validateUsername(username) && validatePassword(password)) {
+      dispatch(
+        SIGNUP_REQUESTED({
+          username,
+          password,
         })
-        .catch((error) => console.log(error.message, "Account does not exist"));
+      );
+    } else if (validateUsername(username) || validatePassword(password)) {
+      return false;
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Register an account</Text>
-      <Text style={[styles.text, { fontSize: 16, fontWeight: "400" }]}>
-        Please enter your username and choose a password
-      </Text>
-
-      <TextInput
-        style={styles.textInput}
-        placeholder="Username"
-        placeholderTextColor="#878787"
-        onChangeText={(username) => {
-          if (username) {
-            setUsername(username);
-          } else {
-            console.log("empty");
-          }
-        }}
-      />
-      <TextInput
-        style={styles.textInput}
-        placeholder="Password"
-        placeholderTextColor="#878787"
-        secureTextEntry={true}
-        onChangeText={(password) => {
-          if (password) {
-            setPassword(password);
-          } else {
-            console.log("empty");
-          }
-        }}
-      />
-      <Button
-        submit={() => {
-          handleRegister(username, password);
-        }}
-      >
-        Register
-      </Button>
-    </View>
+    <ScrollView flex={1}>
+      <Center flex={1} mt="1/3">
+        <Heading textAlign="center">Register an account</Heading>
+        <Heading textAlign="center" fontSize="md" fontWeight="light" m={5}>
+          Please enter your username and password
+        </Heading>
+        <FormControl isRequired isInvalid={error.user.message}>
+          <Stack mx="4" space={3}>
+            <FormControl.Label>Username</FormControl.Label>
+            <Input
+              type="text"
+              placeholder="Username"
+              size="lg"
+              style={styles.input}
+              onChangeText={(username) => setUsername(username)}
+            />
+            {error.user.message ? null : (
+              <FormControl.HelperText>
+                Must be at least 6 characters long
+              </FormControl.HelperText>
+            )}
+            <FormControl.ErrorMessage leftIcon={<WarningIcon size="xs" />}>
+              {error.user.message}
+            </FormControl.ErrorMessage>
+          </Stack>
+        </FormControl>
+        <FormControl
+          isRequired
+          isInvalid={error.password.message.length > 0}
+          mt={5}
+        >
+          <Stack mx="4" space={3}>
+            <FormControl.Label>Password</FormControl.Label>
+            <Input
+              type="password"
+              placeholder="Password"
+              size="md"
+              style={styles.input}
+              onChangeText={(password) => {
+                setPassword(password);
+              }}
+            />
+            {error.password.message.length > 0 ? null : (
+              <FormControl.HelperText>
+                Must be at least 6 characters long, has uppercase, lowercase
+                characters and at least one digit.
+              </FormControl.HelperText>
+            )}
+            {error.password.message.map((error) => (
+              <FormControl.ErrorMessage
+                id={error.id}
+                leftIcon={<WarningIcon size="xs" />}
+              >
+                {error.message}
+              </FormControl.ErrorMessage>
+            ))}
+          </Stack>
+        </FormControl>
+        <Button
+          bg="#EAEAEA"
+          variant="primary"
+          mt={10}
+          isLoading={message ? true : false}
+          _text={styles.text}
+          onPress={() => handleLogin(username, password)}
+        >
+          Sign up
+        </Button>
+      </Center>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    flex: 1,
-    marginTop: StatusBar.currentHeight * 2,
-  },
   text: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
-    color: "rgba(0,0,0,1.00)",
-    textAlign: "center",
-    width: 246,
-    height: 114,
-    flexWrap: "wrap",
   },
-  textInput: {
-    fontWeight: "bold",
-    fontSize: 18,
-    width: 193,
-    height: 39,
-    backgroundColor: "#EAEAEA",
-    padding: 10,
-    marginTop: 5,
+  input: {
+    shadowColor: "#F2F2F2",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.18,
+    shadowRadius: 1.0,
+
+    elevation: 1,
   },
 });
