@@ -101,7 +101,8 @@ module.exports = class PriceData {
    * @param {string} date of transaction
    */
   setDate(date) {
-    if (date) this.date = moment(date);
+    if (date) this.date = moment(date).format(
+      "dddd, MMMM Do YYYY, h:mm:ss a");
     else this.date = undefined;
   }
   /**

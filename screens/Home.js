@@ -173,6 +173,10 @@ export default () => {
         data: [selectedPriceData.pricepaid],
       },
       {
+        title: "Date",
+        data: [selectedPriceData.date]
+      },
+      {
         title: "Post Code",
         data: [selectedPriceData.postcode],
       },
