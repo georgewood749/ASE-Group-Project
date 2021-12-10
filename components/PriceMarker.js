@@ -18,7 +18,7 @@ class PriceMarker extends React.Component {
     return (
       <View style={styles.container}>
         <View style={styles.bubble}>
-          <Text style={styles.dollar}>$</Text>
+          <Text style={styles.dollar}>£</Text>
           <Text style={[styles.amount, { fontSize }]}>{amount}</Text>
         </View>
         <View style={styles.arrowBorder} />

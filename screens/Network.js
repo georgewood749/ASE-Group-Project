@@ -1,3 +1,4 @@
+import React from "react";
 import { Center, Alert, VStack, Text, Box } from "native-base";
 
 export default () => {

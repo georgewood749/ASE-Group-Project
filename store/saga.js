@@ -9,9 +9,16 @@ import {
   take,
   delay,
 } from "redux-saga/effects";
-import { login, signup } from "./api/auth";
 import moment from "moment";
-import { LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT_AUTH, TEST } from "./auth";
+import { login, signup, refreshToken } from "./api/auth";
+import { getPricePaid } from "./api/map";
+import {
+  LOGIN_SUCCESS,
+  LOGIN_FAILURE,
+  LOGOUT_AUTH,
+  TEST,
+  REFRESH_TOKEN,
+} from "./auth";
 import {
   LOGIN_REQUESTED,
   SIGNUP_REQUESTED,
@@ -19,6 +26,8 @@ import {
   TEST_REQUESTED,
 } from "./auth.saga.js";
 import { LOGIN_USER, LOGOUT_USER } from "./user";
+import { PRICE_PAID_REQUESTED } from "./price.saga";
+import { UPDATE_PRICE_DATA, UPDATE_LOCATION } from "./map";
 
 function* loginUser({ payload }) {
   try {
@@ -68,9 +77,7 @@ function* registerUser({ payload }) {
     // main version
     const {
       user: { id, username },
-      accessToken,
-      refreshToken: { token, expirationDate },
-    } = yield call(login, {
+    } = yield call(signup, {
       username: payload.username,
       password: payload.password,
     });
@@ -83,6 +90,14 @@ function* registerUser({ payload }) {
         password: payload.password,
       });
     */
+
+    const {
+      accessToken,
+      refreshToken: { token, expirationDate },
+    } = yield call(login, {
+      username: payload.username,
+      password: payload.password,
+    });
 
     // update auth slice
     yield put(
@@ -108,6 +123,55 @@ function* registerUser({ payload }) {
   }
 }
 
+function* updatePricePaidData({ payload }) {
+  try {
+    const token = yield select((state) => state.auth.accessToken);
+    const {
+      currentLocation: { latitude, longitude },
+      radius,
+    } = payload;
+
+    if (token) {
+      const { propertyPricePaids } = yield call(getPricePaid, {
+        latitude,
+        longitude,
+        token,
+        radius,
+      });
+
+      yield put(UPDATE_PRICE_DATA(propertyPricePaids));
+    }
+  } catch (error) {
+    // if (error.response.status === 400) {
+    //   const currentRefreshToken = yield select(
+    //     (state) => state.auth.refreshToken
+    //   );
+
+    //   const {
+    //     accessToken,
+    //     refreshToken: { token, expirationDate },
+    //   } = yield call(refreshToken, currentRefreshToken);
+
+    //   yield put(
+    //     REFRESH_TOKEN({ accessToken, refreshToken: token, expirationDate })
+    //   );
+
+    //   console.log("refreshing tokens on updating price");
+
+    //   yield put(
+    //     PRICE_PAID_REQUESTED({
+    //       latitude: payload.latitude,
+    //       longitude: payload.longitude,
+    //       radius: payload.radius
+    //     })
+    //   );
+    // } else {
+    //   console.log(error.message);
+    // }
+    console.log(error.message);
+  }
+}
+
 function* test({ payload }) {
   yield put({
     type: "TEST",
@@ -128,31 +192,46 @@ function* watchUserRegister() {
   yield takeLatest(SIGNUP_REQUESTED, registerUser);
 }
 
-function* watchUserLogout() {
-  console.log("launch application first time watcher running for user login");
+function* watchPricePaid() {
+  yield takeLatest(PRICE_PAID_REQUESTED, updatePricePaidData);
+}
 
+function* watchUserLogout() {
   while (yield take(LOGIN_SUCCESS.type)) {
-    console.log("user logged in");
+    console.log("timer started racing with user ");
 
     // const expirationDate = yield select((state) => state.auth.expirationDate);
     // const today = moment();
     // const value = moment(expirationDate).diff(today, 'x');
+    const isAuthenticated = select((state) => state.auth.isAuthenticated);
+    while (isAuthenticated) {
+      const { start, stop } = yield race({
+        start: delay(100000),
+        stop: take(LOGOUT_REQUESTED.type),
+      });
 
-    const { start, stop } = yield race({
-      start: delay(100000),
-      stop: take(LOGOUT_REQUESTED.type),
-    });
+      if (start) {
+        // we execution referesh token call.
+        console.log("executing refresh tokens");
+        // const currentRefreshToken = yield select(
+        //   (state) => state.auth.refreshToken
+        // );
 
-    if (start) {
-      // we execution referesh token call.
-      console.log("executing refresh tokens");
+        // const {
+        //   accessToken,
+        //   refreshToken: { token, expirationDate },
+        // } = yield call(refreshToken, currentRefreshToken);
 
-      yield put(LOGOUT_AUTH());
-      yield put(LOGOUT_USER());
-    } else if (stop) {
-      console.log("user logging out");
-      yield put(LOGOUT_AUTH());
-      yield put(LOGOUT_USER());
+        // yield put(
+        //   REFRESH_TOKEN({ accessToken, refreshToken: token, expirationDate })
+        // );
+
+        console.log("tokens refreshed");
+      } else if (stop) {
+        console.log("user logging out");
+        yield put(LOGOUT_AUTH());
+        yield put(LOGOUT_USER());
+      }
     }
   }
 }
@@ -163,5 +242,6 @@ export default function* rootSaga() {
     watchUserRegister(),
     watchUserLogin(),
     watchUserLogout(),
+    watchPricePaid(),
   ]);
 }

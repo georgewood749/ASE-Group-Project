@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import {requestForegroundPermissionsAsync, getCurrentPositionAsync} from 'expo-location';
+import {
+  requestForegroundPermissionsAsync,
+  getCurrentPositionAsync,
+} from "expo-location";
 
 /**
- * Function to hook location request. 
- * Read more about it on: 
+ * Function to hook location request.
+ * Read more about it on:
  * https://docs.expo.dev/versions/latest/sdk/location
  */
 

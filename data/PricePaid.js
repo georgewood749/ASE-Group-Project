@@ -1,3 +1,4 @@
+import moment from "moment";
 module.exports = class PriceData {
   constructor(
     transactionId,
@@ -100,7 +101,7 @@ module.exports = class PriceData {
    * @param {string} date of transaction
    */
   setDate(date) {
-    if (date) this.date = new Date(date);
+    if (date) this.date = moment(date);
     else this.date = undefined;
   }
   /**

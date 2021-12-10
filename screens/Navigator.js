@@ -37,8 +37,6 @@ const SignedOut = () => (
   </NavigationContainer>
 );
 
-
-
 export default () => {
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
   const [isConnected, isLoading] = useNetwork();
@@ -47,7 +45,7 @@ export default () => {
     return <LoadingIndicator />;
   } else if (!isConnected) {
     return <Network />;
-  } else if (true) {
+  } else if (isAuthenticated) {
     return <SignedIn />;
   } else {
     return <SignedOut />;

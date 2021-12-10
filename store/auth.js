@@ -35,10 +35,19 @@ const slice = createSlice({
     RESET_ERROR: (state, _) => {
       state.message = undefined;
     },
+    REFRESH_TOKEN: (state, action) => {
+      const {} = action.payload;
+    },
   },
 });
 
-export const { LOGIN_SUCCESS, LOGIN_FAILURE, LOGOUT_AUTH, TEST, RESET_ERROR } =
-  slice.actions;
+export const {
+  LOGIN_SUCCESS,
+  LOGIN_FAILURE,
+  LOGOUT_AUTH,
+  TEST,
+  RESET_ERROR,
+  REFRESH_TOKEN,
+} = slice.actions;
 
 export default slice.reducer;

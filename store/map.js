@@ -1,37 +1,43 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { NumberIncrementStepper } from "native-base";
 
 const slice = createSlice({
   name: "map",
   initialState: {
     currentLocation: {
-        latitude: Number,
-        longitude: Number,
+      latitude: Number,
+      longitude: Number,
+      latitudeDelta: Number,
+      longitudeDelta: Number,
     },
     pricePaid: [],
     filter: {
-        price: Number,
-        postcode: Number,
-        distance: Number,
+      price: Number,
+      postcode: Number,
+      distance: Number,
     },
     isFilter: false,
   },
   reducers: {
-    LOGIN_USER: (state, action) => {
-      const { id, username } = action.payload;
-      state.id = id;
-      state.username = username;
+    UPDATE_PRICE_DATA: (state, action) => {
+      const { payload } = action;
+      state.pricePaid = payload;
     },
-    LOGOUT_USER: (state, _) => {
-      state.id = undefined;
-      state.username = undefined;
+    UPDATE_LOCATION: (state, action) => {
+      const { longitude, latitude, LATITUDE_DELTA, LONGITUDE_DELTA } =
+        action.payload;
+      state.currentLocation = {
+        longitude: longitude,
+        latitude: latitude,
+        longitudeDelta: LONGITUDE_DELTA,
+        latitudeDelta: LATITUDE_DELTA,
+      };
     },
-    TEST: (_, action) => {
+    UPDATE_FILTER: (_, action) => {
       console.log(action);
     },
   },
 });
 
-export const { LOGIN_USER, LOGOUT_USER } = slice.actions;
+export const { UPDATE_PRICE_DATA, UPDATE_LOCATION } = slice.actions;
 
 export default slice.reducer;
