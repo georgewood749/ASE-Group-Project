@@ -12,7 +12,7 @@
  
 ## 🏋️‍♂️ Getting Started
    ### 🧑‍💻 Installation
-  * ▶️ [Clone](https://github.com/georgewood749/ASE-Group-Project.git) repo files
+  * ▶️ [Clone](https://github.com/georgewood749/ASE-Group-Project/archive/refs/heads/main.zip) repo files
   * ▶️ run ``npm install`` or ``npm i`` on the terminal to install dependencies
     ** You need to install [nodejs](https://nodejs.org/en/) on your pc or mac to use npm
   * ▶️ visit [Expo Docs](https://docs.expo.dev/) for Expo documentation
